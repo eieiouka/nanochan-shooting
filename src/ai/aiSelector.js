@@ -3,10 +3,10 @@ import { guard3GtoModel } from "./guard3GtoModel";
 export const MAX_G_STREAK = 2;
 
 const G_SHORT_META = {
-  window: 5,
-  expectedGRate: 0.35,
-  scale: 80,
-  maxShift: 28,
+  window: 6,
+  expectedGRate: 0.20,
+  scale: 25,
+  maxShift: 6,
 };
 
 function normalizeRow(row, emaEnergy, emaGStreak) {
@@ -40,6 +40,10 @@ function pickWeighted(row) {
 }
 
 function applyGShortageMeta(row, playerActionHistory, emaEnergy, emaGStreak) {
+  // ナノカが2連G後でG不可のときは、G不足メタをかけない
+  // ここで補正するとFに寄りすぎてハメられやすくなる
+  if (emaGStreak >= MAX_G_STREAK) return row;
+
   if (playerActionHistory.length < 4) return row;
 
   const recent = playerActionHistory.slice(-G_SHORT_META.window);

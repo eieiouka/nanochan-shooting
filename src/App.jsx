@@ -1,9 +1,26 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import "./App.css";
 import { MAX_G_STREAK, nextGStreak, pickEmaAction } from "./ai/aiSelector";
 import { audioMixer } from "./audio/audioMixer";
 
 const MAX_LIFE = 10;
+
+const NANOKA_MOVIES = {
+  C: "/movies/nanoka_charge.mp4",
+  G: "/movies/nanoka_guard.mp4",
+  F: "/movies/nanoka_fire.mp4",
+  B: "/movies/nanoka_blast.mp4",
+
+  FIRE_FIRE: "/movies/nanoka_fire_fire.mp4",
+  GUARD_NOTHING: "/movies/nanoka_guard_nothing.mp4",
+
+  CHARGE_GUARD: "/movies/nanoka_charge_guard.mp4",
+  GUARD_GUARD: "/movies/nanoka_guard_guard.mp4",
+  FIRE_GUARD: "/movies/nanoka_fire_guard.mp4",
+
+  CHARGE_FIRE: "/movies/nanoka_charge_fire.mp4",
+  GUARD_FIRE: "/movies/nanoka_guard_fire.mp4",
+};
 
 const ACTION_LABELS = {
   C: "チャージ",
@@ -34,25 +51,14 @@ function resolveTurn(playerAction, emaAction, playerEnergy, emaEnergy, playerGSt
       emaEnergy: 0,
       playerGStreak: 0,
       emaGStreak: 0,
-      message: "大砲同士が相殺！互いにエネ0へ戻った。",
     };
   }
 
-  if (playerAction === "B") {
-    return { result: "playerHit", message: "大砲命中！エマのライフを1削った。" };
-  }
+  if (playerAction === "B") return { result: "playerHit" };
+  if (emaAction === "B") return { result: "emaHit" };
 
-  if (emaAction === "B") {
-    return { result: "emaHit", message: "エマの大砲が命中！ライフを1失った。" };
-  }
-
-  if (playerAction === "F" && emaAction === "C") {
-    return { result: "playerHit", message: "ファイア命中！エマのチャージを撃ち抜いた。" };
-  }
-
-  if (playerAction === "C" && emaAction === "F") {
-    return { result: "emaHit", message: "エマのファイアが命中！チャージを読まれた。" };
-  }
+  if (playerAction === "F" && emaAction === "C") return { result: "playerHit" };
+  if (playerAction === "C" && emaAction === "F") return { result: "emaHit" };
 
   let nextPlayer = playerEnergy;
   let nextEma = emaEnergy;
@@ -62,23 +68,12 @@ function resolveTurn(playerAction, emaAction, playerEnergy, emaEnergy, playerGSt
   if (playerAction === "F") nextPlayer -= 1;
   if (emaAction === "F") nextEma -= 1;
 
-  nextPlayer = clampEnergy(nextPlayer);
-  nextEma = clampEnergy(nextEma);
-
-  let message = "読み合い継続。";
-  if (playerAction === "F" && emaAction === "G") message = "ファイアはガードされた。";
-  if (playerAction === "G" && emaAction === "F") message = "エマのファイアをガードで防いだ。";
-  if (playerAction === "F" && emaAction === "F") message = "ファイア同士が相殺。互いにエネ-1。";
-  if (playerAction === "C" && emaAction === "C") message = "互いにチャージ。";
-  if (playerAction === "G" && emaAction === "G") message = "互いにガード。次の連続G制限に注意。";
-
   return {
     result: "continue",
-    playerEnergy: nextPlayer,
-    emaEnergy: nextEma,
+    playerEnergy: clampEnergy(nextPlayer),
+    emaEnergy: clampEnergy(nextEma),
     playerGStreak: nextPlayerGStreak,
     emaGStreak: nextEmaGStreak,
-    message,
   };
 }
 
@@ -132,24 +127,15 @@ export default function App() {
   const [playerLife, setPlayerLife] = useState(MAX_LIFE);
   const [emaLife, setEmaLife] = useState(MAX_LIFE);
   const [turn, setTurn] = useState(1);
-  const [history, setHistory] = useState([
-    { text: "0-0 / G0-0。10ライフ制、3連続ガード禁止で開始。", type: "system" },
-  ]);
   const [lastActions, setLastActions] = useState({ player: null, ema: null });
   const [playerActionHistory, setPlayerActionHistory] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
+  const [nanokaMovie, setNanokaMovie] = useState(null);
+  const [pendingTurn, setPendingTurn] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const matchOver = playerLife <= 0 || emaLife <= 0;
   const playerGuardLocked = playerGStreak >= MAX_G_STREAK;
-
-  const statusText = useMemo(() => {
-    if (!matchOver) return "10ライフ制。3連続G禁止 + G不足メタ。";
-    return playerLife > emaLife ? "勝利。エマを処刑完了。" : "敗北。エマに読み負けた。";
-  }, [matchOver, playerLife, emaLife]);
-
-  function addHistory(entry) {
-    setHistory((prev) => [entry, ...prev].slice(0, 10));
-  }
 
   function resetRoundState() {
     setPlayerEnergy(0);
@@ -158,16 +144,37 @@ export default function App() {
     setEmaGStreak(0);
   }
 
-  function damagePlayer() {
-    setPlayerLife((value) => Math.max(0, value - 1));
-  }
+  function finishTurn() {
+    if (!pendingTurn) return;
 
-  function damageEma() {
-    setEmaLife((value) => Math.max(0, value - 1));
+    const { action, emaAction, result } = pendingTurn;
+
+    setLastActions({ player: action, ema: emaAction });
+    setPlayerActionHistory((prev) => [...prev, action].slice(-12));
+
+    if (result.result === "playerHit") {
+      setEmaLife((value) => Math.max(0, value - 1));
+      resetRoundState();
+      setTurn((value) => value + 1);
+    } else if (result.result === "emaHit") {
+      setPlayerLife((value) => Math.max(0, value - 1));
+      resetRoundState();
+      setTurn((value) => value + 1);
+    } else {
+      setPlayerEnergy(result.playerEnergy);
+      setEmaEnergy(result.emaEnergy);
+      setPlayerGStreak(result.playerGStreak);
+      setEmaGStreak(result.emaGStreak);
+    }
+
+    setPendingTurn(null);
+    setNanokaMovie(null);
+    setIsAnimating(false);
   }
 
   function play(action) {
     if (matchOver) return;
+    if (isAnimating) return;
     if (action === "F" && playerEnergy < 1) return;
     if (action === "B" && playerEnergy < 6) return;
     if (action === "G" && playerGuardLocked) return;
@@ -180,40 +187,75 @@ export default function App() {
       playerActionHistory,
     });
 
-    const result = resolveTurn(action, emaAction, playerEnergy, emaEnergy, playerGStreak, emaGStreak);
+    const result = resolveTurn(
+      action,
+      emaAction,
+      playerEnergy,
+      emaEnergy,
+      playerGStreak,
+      emaGStreak
+    );
 
-    setLastActions({ player: action, ema: emaAction });
-    setPlayerActionHistory((prev) => [...prev, action].slice(-12));
+    setPendingTurn({ action, emaAction, result });
+      let movie = NANOKA_MOVIES[emaAction];
 
-    const stateLine = `状態 ${emaEnergy}-${playerEnergy} / G${emaGStreak}-${playerGStreak}`;
-    const actionLine = `あなた：${ACTION_LABELS[action]} / エマ：${ACTION_LABELS[emaAction]}`;
+      // プレイヤーがFを選んだとき専用
+      if (action === "F") {
+        // あなたF / ナノカC
+        if (emaAction === "C") {
+          movie = NANOKA_MOVIES.CHARGE_FIRE;
+        }
 
-    if (result.result === "playerHit") {
-      damageEma();
-      resetRoundState();
-      setTurn((value) => value + 1);
-      addHistory({ text: `${stateLine}　${actionLine}　${result.message}`, type: "win" });
-      return;
-    }
+        // あなたF / ナノカG
+        else if (emaAction === "G") {
+          movie = NANOKA_MOVIES.GUARD_FIRE;
+        }
 
-    if (result.result === "emaHit") {
-      damagePlayer();
-      resetRoundState();
-      setTurn((value) => value + 1);
-      addHistory({ text: `${stateLine}　${actionLine}　${result.message}`, type: "lose" });
-      return;
-    }
+        // あなたF / ナノカF
+        else if (emaAction === "F") {
+          movie = NANOKA_MOVIES.FIRE_FIRE;
+        }
 
-    setPlayerEnergy(result.playerEnergy);
-    setEmaEnergy(result.emaEnergy);
-    setPlayerGStreak(result.playerGStreak);
-    setEmaGStreak(result.emaGStreak);
-    addHistory({ text: `${stateLine}　${actionLine}　${result.message}`, type: "normal" });
+        // あなたF / ナノカB
+        else if (emaAction === "B") {
+          movie = NANOKA_MOVIES.B;
+        }
+      }
+
+      // プレイヤーがGを選んだとき専用
+      else if (action === "G") {
+        // あなたG / ナノカC
+        if (emaAction === "C") {
+          movie = NANOKA_MOVIES.CHARGE_GUARD;
+        }
+
+        // あなたG / ナノカG
+        else if (emaAction === "G") {
+          movie = NANOKA_MOVIES.GUARD_GUARD;
+        }
+
+        // あなたG / ナノカF
+        else if (emaAction === "F") {
+          movie = NANOKA_MOVIES.FIRE_GUARD;
+        }
+
+        // あなたG / ナノカB
+        else if (emaAction === "B") {
+          movie = NANOKA_MOVIES.B;
+        }
+      }
+
+      // ナノカのガード空振り
+      else if (emaAction === "G") {
+        movie = NANOKA_MOVIES.GUARD_NOTHING;
+      }
+
+      setNanokaMovie(movie);
+      setIsAnimating(true);
   }
 
   function startGame() {
     setGameStarted(true);
-
     audioMixer.playBgm("/sounds/bgm.mp3");
   }
 
@@ -224,134 +266,113 @@ export default function App() {
     setTurn(1);
     setLastActions({ player: null, ema: null });
     setPlayerActionHistory([]);
-    setHistory([{ text: "0-0 / G0-0。10ライフ制、3連続ガード禁止で開始。", type: "system" }]);
+    setPendingTurn(null);
+    setNanokaMovie(null);
+    setIsAnimating(false);
   }
 
   if (!gameStarted) {
     return (
       <main className="app">
         <section className="result-panel clear">
-          <h1>6連リロードで桜羽エマを倒そう</h1>
+          <h1>黒部ナノカを倒そう</h1>
 
           <p>
-            チャージ、ガード、ファイア、大砲。
+            チャージでエネルギーを溜め、
             <br />
-            10ライフ制。
-            <br />
-            3連続ガードは禁止。
+            攻撃を当てて10ライフを削り切れ。
           </p>
 
-          <button onClick={startGame}>
-            ゲームスタート
-          </button>
+          <button onClick={startGame}>ゲームスタート</button>
         </section>
       </main>
     );
   }
 
   return (
-    <main className="app">
-      <section className="hero">
-        <div className="title-block">
-          <p className="eyebrow">ema-shokei</p>
-          <h1>6連リロードで桜羽エマを倒そう</h1>
-          <p className="description">
-            チャージ、ガード、ファイア、大砲。10ライフ制。3連続ガードは禁止。
-          </p>
-        </div>
-
-        <div className="score-card">
-          <span>Turn</span>
-          <strong>{turn}</strong>
-          <small>{statusText}</small>
-        </div>
-      </section>
-
-      <section className="scoreboard life-scoreboard">
-        <div className="score-number player">{playerLife}</div>
-        <div className="score-label">あなた</div>
-        <div className="score-separator">-</div>
-        <div className="score-label">桜羽エマ</div>
-        <div className="score-number ema">{emaLife}</div>
-      </section>
-
-      <section className="battle-board">
-        <article className="fighter player-card">
-          <div className="avatar-wrap">
-            <div className="avatar player-avatar">YOU</div>
-            <ActionEffect action={lastActions.player} />
-          </div>
-          <h2>あなた</h2>
-          <LifeMeter value={playerLife} />
-          <p className="energy-text">ライフ {playerLife} / {MAX_LIFE}</p>
-          <EnergyMeter value={playerEnergy} />
-          <p className="energy-text">エネ {playerEnergy} / 6</p>
-          <GuardStreak value={playerGStreak} />
-        </article>
-
-        <div className="center-panel">
-          <div className="versus">VS</div>
-          <div className="rule-chip">10ライフ制</div>
-          <div className="rule-chip">Gは最大2連続</div>
-          <div className="rule-chip">G2後はG不可</div>
-          <div className="rule-chip">Bは6エネ</div>
-          <div className="rule-chip">G不足なら少しメタ</div>
-        </div>
-
-        <article className="fighter ema-card">
-          <div className="avatar-wrap">
-            <div className="avatar ema-avatar">EMA</div>
-            <ActionEffect action={lastActions.ema} />
-          </div>
-          <h2>桜羽エマ</h2>
-          <LifeMeter value={emaLife} />
-          <p className="energy-text">ライフ {emaLife} / {MAX_LIFE}</p>
-          <EnergyMeter value={emaEnergy} />
-          <p className="energy-text">エネ {emaEnergy} / 6</p>
-          <GuardStreak value={emaGStreak} />
-        </article>
-      </section>
-
-      <section className="controls">
-        <button className="action-button charge" disabled={matchOver} onClick={() => play("C")}>
-          <span className="action-name">チャージ</span>
-          <span className="action-sub">エネ+1</span>
-        </button>
-
-        <button className="action-button guard" disabled={matchOver || playerGuardLocked} onClick={() => play("G")}>
-          <span className="action-name">ガード</span>
-          <span className="action-sub">{playerGuardLocked ? "3連続禁止" : "防御"}</span>
-        </button>
-
-        <button className="action-button fire" disabled={matchOver || playerEnergy < 1} onClick={() => play("F")}>
-          <span className="action-name">ファイア</span>
-          <span className="action-sub">1エネ消費</span>
-        </button>
-
-        <button className="action-button cannon" disabled={matchOver || playerEnergy < 6} onClick={() => play("B")}>
-          <span className="action-name">大砲</span>
-          <span className="action-sub">6エネ</span>
-        </button>
-      </section>
-
-      {matchOver && (
-        <section className={`result-panel ${playerLife > emaLife ? "clear" : "bad"}`}>
-          <h2>{playerLife > emaLife ? "勝利" : "敗北"}</h2>
-          <p>あなた {playerLife} - {emaLife} エマ</p>
-          <button onClick={resetGame}>もう一度</button>
-        </section>
+    <>
+      {nanokaMovie && (
+        <video
+          className="nanoka-movie-bg"
+          src={nanokaMovie}
+          autoPlay
+          playsInline
+          onEnded={finishTurn}
+          onError={finishTurn}
+        />
       )}
 
-      <section className="history">
-        <h2>ログ</h2>
-        <div className="history-list">
-          {history.map((item, index) => (
-            <p key={`${item.text}-${index}`} className={`history-item ${item.type}`}>
-              {item.text}
-            </p>
-          ))}
-        </div>
-      </section>
-    </main>
+      <main className="app">
+        <section className="scoreboard life-scoreboard">
+          <div className="score-number player">{playerLife}</div>
+          <div className="score-label">あなた</div>
+          <div className="score-separator">-</div>
+          <div className="score-label">黒部ナノカ</div>
+          <div className="score-number ema">{emaLife}</div>
+        </section>
+
+        <section className="battle-board">
+          <article className="fighter player-card">
+            <div className="avatar-wrap">
+              <div className="avatar player-avatar">YOU</div>
+              <ActionEffect action={lastActions.player} />
+            </div>
+            <h2>あなた</h2>
+            <LifeMeter value={playerLife} />
+            <p className="energy-text">ライフ {playerLife} / {MAX_LIFE}</p>
+            <EnergyMeter value={playerEnergy} />
+            <p className="energy-text">エネ {playerEnergy} / 6</p>
+            <GuardStreak value={playerGStreak} />
+          </article>
+
+          <div className="center-panel">
+            <div className="versus">VS</div>
+          </div>
+
+          <article className="fighter ema-card">
+            <div className="avatar-wrap">
+              <div className="avatar ema-avatar">NANOKA</div>
+              <ActionEffect action={lastActions.ema} />
+            </div>
+            <h2>黒部ナノカ</h2>
+            <LifeMeter value={emaLife} />
+            <p className="energy-text">ライフ {emaLife} / {MAX_LIFE}</p>
+            <EnergyMeter value={emaEnergy} />
+            <p className="energy-text">エネ {emaEnergy} / 6</p>
+            <GuardStreak value={emaGStreak} />
+          </article>
+        </section>
+
+        <section className="controls">
+          <button className="action-button charge" disabled={matchOver || isAnimating} onClick={() => play("C")}>
+            <span className="action-name">チャージ</span>
+            <span className="action-sub">エネ+1</span>
+          </button>
+
+          <button className="action-button guard" disabled={matchOver || isAnimating || playerGuardLocked} onClick={() => play("G")}>
+            <span className="action-name">ガード</span>
+            <span className="action-sub">{playerGuardLocked ? "使用不可" : "防御"}</span>
+          </button>
+
+          <button className="action-button fire" disabled={matchOver || isAnimating || playerEnergy < 1} onClick={() => play("F")}>
+            <span className="action-name">ファイア</span>
+            <span className="action-sub">1エネ消費</span>
+          </button>
+
+          <button className="action-button cannon" disabled={matchOver || isAnimating || playerEnergy < 6} onClick={() => play("B")}>
+            <span className="action-name">大砲</span>
+            <span className="action-sub">6エネ</span>
+          </button>
+        </section>
+
+        {matchOver && (
+          <section className={`result-panel ${playerLife > emaLife ? "clear" : "bad"}`}>
+            <h2>{playerLife > emaLife ? "勝利" : "敗北"}</h2>
+            <p>あなた {playerLife} - {emaLife} ナノカ</p>
+            <button onClick={resetGame}>もう一度</button>
+          </section>
+        )}
+      </main>
+    </>
   );
 }
