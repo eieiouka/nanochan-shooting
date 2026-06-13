@@ -2,7 +2,7 @@ class AudioMixer {
   constructor() {
     this.bgm = null;
     this.masterVolume = 1;
-    this.bgmVolume = 0.8;
+    this.bgmVolume = 0.82;
     this.seVolume = 0.8;
   }
 
