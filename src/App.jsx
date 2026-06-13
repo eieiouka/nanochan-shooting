@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import "./App.css";
 import { MAX_G_STREAK, nextGStreak, pickEmaAction } from "./ai/aiSelector";
+import { audioMixer } from "./audio/audioMixer";
 
 const MAX_LIFE = 10;
 
@@ -136,6 +137,7 @@ export default function App() {
   ]);
   const [lastActions, setLastActions] = useState({ player: null, ema: null });
   const [playerActionHistory, setPlayerActionHistory] = useState([]);
+  const [gameStarted, setGameStarted] = useState(false);
 
   const matchOver = playerLife <= 0 || emaLife <= 0;
   const playerGuardLocked = playerGStreak >= MAX_G_STREAK;
@@ -209,6 +211,12 @@ export default function App() {
     addHistory({ text: `${stateLine}　${actionLine}　${result.message}`, type: "normal" });
   }
 
+  function startGame() {
+    setGameStarted(true);
+
+    audioMixer.playBgm("/sounds/bgm.mp3");
+  }
+
   function resetGame() {
     resetRoundState();
     setPlayerLife(MAX_LIFE);
@@ -217,6 +225,28 @@ export default function App() {
     setLastActions({ player: null, ema: null });
     setPlayerActionHistory([]);
     setHistory([{ text: "0-0 / G0-0。10ライフ制、3連続ガード禁止で開始。", type: "system" }]);
+  }
+
+  if (!gameStarted) {
+    return (
+      <main className="app">
+        <section className="result-panel clear">
+          <h1>6連リロードで桜羽エマを倒そう</h1>
+
+          <p>
+            チャージ、ガード、ファイア、大砲。
+            <br />
+            10ライフ制。
+            <br />
+            3連続ガードは禁止。
+          </p>
+
+          <button onClick={startGame}>
+            ゲームスタート
+          </button>
+        </section>
+      </main>
+    );
   }
 
   return (
