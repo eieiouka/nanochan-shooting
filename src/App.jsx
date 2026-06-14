@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import { MAX_G_STREAK, nextGStreak, pickEmaAction } from "./ai/aiSelector";
+import {
+  MAX_G_STREAK,
+  nextGStreak,
+  pickEmaAction,
+  dumpExploitReport,
+} from "./ai/aiSelector";
 
 const MAX_LIFE = 30;
 
@@ -171,13 +176,32 @@ export default function App() {
 
     const { action, result } = pendingTurn;
 
-    setPlayerActionHistory((prev) => [...prev, action].slice(-12));
+    setPlayerActionHistory((prev) => [
+      ...prev,
+      {
+        key: pendingTurn.spotKey,
+        energyKey: pendingTurn.energyKey,
+        action,
+      },
+    ].slice(-120));
 
     if (result.result === "playerHit") {
+      const nextEmaLife = emaLife - 1;
+
+      if (nextEmaLife <= 0) {
+        dumpExploitReport(playerActionHistory);
+      }
+
       setEmaLife((value) => Math.max(0, value - 1));
       setLastActions({ player: null, ema: null });
       resetRoundState();
     } else if (result.result === "emaHit") {
+      const nextPlayerLife = playerLife - 1;
+
+      if (nextPlayerLife <= 0) {
+        dumpExploitReport(playerActionHistory);
+      }
+
       setPlayerLife((value) => Math.max(0, value - 1));
       setLastActions({ player: null, ema: null });
       resetRoundState();
@@ -237,6 +261,9 @@ export default function App() {
     if (action === "B" && playerEnergy < 6) return;
     if (action === "G" && playerGuardLocked) return;
 
+    const spotKey = `${emaEnergy}-${playerEnergy}-${emaGStreak}-${playerGStreak}`;
+    const energyKey = `${emaEnergy}-${playerEnergy}`;
+
     const emaAction = pickEmaAction({
       emaEnergy,
       playerEnergy,
@@ -256,7 +283,7 @@ export default function App() {
 
     const movie = chooseNanokaMovie(action, emaAction);
 
-    setPendingTurn({ action, emaAction, result });
+    setPendingTurn({ action, emaAction, result, spotKey, energyKey });
     setIsAnimating(true);
 
     const video = videoRefs.current[movie];
