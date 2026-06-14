@@ -171,9 +171,16 @@ function applySpotExploit(row, playerActionHistory, spotKey, energyKey, emaEnerg
   }
 
   // Fが多すぎる/少なすぎる → Fを受けるGを増やす
-  if (leakAction === "F" && emaGStreak < MAX_G_STREAK) {
-    moveProb(adjusted, "C", "G", shift * 0.75);
-    moveProb(adjusted, "F", "G", shift * 0.25);
+  if (leakAction === "F") {
+    if (leakValue > 0 && emaGStreak < MAX_G_STREAK) {
+      // F過多 → Gで受ける
+      moveProb(adjusted, "C", "G", shift * 0.75);
+      moveProb(adjusted, "F", "G", shift * 0.25);
+    } else if (leakValue < 0) {
+      // F不足 → 相手が撃ってこないのでCで溜める
+      moveProb(adjusted, "F", "C", shift * 0.75);
+      moveProb(adjusted, "G", "C", shift * 0.25);
+    }
   }
 
   // Gが多すぎる → Cで溜める
