@@ -462,62 +462,6 @@ body {
     0 0 6px rgba(255, 191, 0, 0.8);
 }
 
-@media (max-width: 780px) {
-  .app {
-    height: auto;
-    min-height: 100svh;
-  }
-
-  .app::before {
-    background-size: cover;
-  }
-
-  .battle-board {
-    grid-template-columns: 1fr;
-  }
-
-  .controls {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .score-number {
-    font-size: 32px;
-  }
-
-  /* ナノカの弾＋行動 */
-  .nanoka-ammo-card {
-    position: fixed;
-
-    top: 70px;
-    right: 12px;
-
-    z-index: 10;
-  }
-
-  /* プレイヤーの弾＋行動 */
-  .player-card {
-    position: fixed;
-
-    left: 12px;
-    bottom: 100px;
-
-    z-index: 10;
-  }
-
-  .player-ammo,
-  .nanoka-ammo-corner {
-    position: static;
-    transform: none;
-  }
-
-  .player-card .action-effect,
-  .nanoka-ammo-card .action-effect {
-    position: static;
-    transform: none;
-    margin-top: 6px;
-  }
-}
-
 .player-card {
   position: relative;
 
@@ -571,4 +515,74 @@ body {
 
 .start-panel p {
   margin-bottom: 25px;
+}
+
+@media (max-width: 780px) {
+  .app {
+    height: 100svh;
+    min-height: 100svh;
+  }
+
+  .app::before {
+    background-size: cover;
+  }
+
+  .battle-board {
+    display: block;
+  }
+
+  .score-number {
+    font-size: 32px;
+  }
+
+  .controls {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .player-card,
+  .nanoka-ammo-card {
+    position: fixed;
+
+    width: auto;
+    min-height: 0;
+    padding: 0;
+
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nanoka-ammo-card {
+    top: 70px;
+    right: 12px;
+    z-index: 10;
+    align-items: flex-end;
+  }
+
+  .player-card {
+    left: 20px;
+    bottom: 120px;
+    z-index: 10;
+    align-items: flex-start;
+  }
+
+  .player-ammo,
+  .nanoka-ammo-corner {
+    position: static;
+    transform: none;
+  }
+
+  .player-card .action-effect,
+  .nanoka-ammo-card .action-effect {
+    position: static;
+    transform: none;
+
+    width: 176px;
+    min-width: 176px;
+
+    margin-top: 8px;
+  }
 }
