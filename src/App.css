@@ -419,27 +419,28 @@ body {
 }
 
 .nanoka-ammo-card .action-effect {
-  top: 16px;
+  top: 78px;
 }
 
 .nanoka-ammo-corner {
   position: absolute;
 
-  top: 68px;
+  top: 0px;
   left: 50%;
 
   transform: translateX(-50%);
 
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 
   z-index: 4;
-}
 
-.ammo-icon {
-  font-size: 16px;
-  line-height: 1;
+  padding: 10px 14px;
+  border: 3px solid #2a1818;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 5px 5px 0 rgba(42, 24, 24, 0.18);
 }
 
 .ammo-bullet {
@@ -488,4 +489,40 @@ body {
   .score-number {
     font-size: 32px;
   }
+}
+
+.player-card {
+  position: relative;
+
+  min-height: 0;
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.player-card .action-effect {
+  top: 78px;
+}
+
+.player-ammo {
+  position: absolute;
+
+  top: 0;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  z-index: 4;
+
+  padding: 10px 14px;
+  border: 3px solid #2a1818;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 5px 5px 0 rgba(42, 24, 24, 0.18);
 }

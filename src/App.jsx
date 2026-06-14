@@ -290,20 +290,16 @@ export default function App() {
 
       <section className="battle-board">
         <article className="fighter player-card">
-          <div className="avatar-wrap">
-            <div className="avatar player-avatar">YOU</div>
-            <ActionEffect action={lastActions.player} />
+          <ActionEffect action={lastActions.player} />
+
+          <div className="player-ammo">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <span
+                key={index}
+                className={`ammo-bullet ${index < playerEnergy ? "filled" : ""}`}
+              />
+            ))}
           </div>
-
-          <h2>あなた</h2>
-
-          <LifeMeter value={playerLife} />
-          <p className="energy-text">ライフ {playerLife} / {MAX_LIFE}</p>
-
-          <EnergyMeter value={playerEnergy} />
-          <p className="energy-text">エネ {playerEnergy} / 6</p>
-
-          <GuardStreak value={playerGStreak} />
         </article>
 
         <div className="center-panel">
