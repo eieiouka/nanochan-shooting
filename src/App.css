@@ -409,6 +409,12 @@ body {
   object-position: top center;
 
   pointer-events: none;
+
+  opacity: 0;
+}
+
+.nanoka-movie-bg.active {
+  opacity: 1;
 }
 
 .nanoka-ammo-card {

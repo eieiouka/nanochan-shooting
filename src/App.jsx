@@ -278,6 +278,11 @@ export default function App() {
     setEmaLife(MAX_LIFE);
     setLastActions({ player: null, ema: null });
     setPlayerActionHistory([]);
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.removeAttribute("src");
+      videoRef.current.load();
+    }
     setPendingTurn(null);
     setIsAnimating(false);
   }
@@ -308,7 +313,7 @@ export default function App() {
     <main className="app">
       <video
         ref={videoRef}
-        className="nanoka-movie-bg"
+        className={`nanoka-movie-bg ${isAnimating ? "active" : ""}`}
         playsInline
         preload="auto"
         onEnded={finishTurn}
