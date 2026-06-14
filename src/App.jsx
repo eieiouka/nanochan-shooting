@@ -250,7 +250,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <main className="app">
       {nanokaMovie && (
         <video
           className="nanoka-movie-bg"
@@ -262,91 +262,91 @@ export default function App() {
         />
       )}
 
-      <main className="app">
-        <section className="scoreboard life-scoreboard">
-          <div className="score-number player">{playerLife}</div>
-          <div className="score-label">あなた</div>
-          <div className="score-separator">-</div>
-          <div className="score-label">黒部ナノカ</div>
-          <div className="score-number ema">{emaLife}</div>
-        </section>
+      <section className="scoreboard life-scoreboard">
+        <div className="score-number player">{playerLife}</div>
+        <div className="score-label">あなた</div>
+        <div className="score-separator">-</div>
+        <div className="score-label">黒部ナノカ</div>
+        <div className="score-number ema">{emaLife}</div>
+      </section>
 
-        <section className="battle-board">
-          <article className="fighter player-card">
-            <div className="avatar-wrap">
-              <div className="avatar player-avatar">YOU</div>
-              <ActionEffect action={lastActions.player} />
-            </div>
-
-            <h2>あなた</h2>
-
-            <LifeMeter value={playerLife} />
-            <p className="energy-text">ライフ {playerLife} / {MAX_LIFE}</p>
-
-            <EnergyMeter value={playerEnergy} />
-            <p className="energy-text">エネ {playerEnergy} / 6</p>
-
-            <GuardStreak value={playerGStreak} />
-          </article>
-
-          <div className="center-panel">
-            <div className="versus">VS</div>
+      <section className="battle-board">
+        <article className="fighter player-card">
+          <div className="avatar-wrap">
+            <div className="avatar player-avatar">YOU</div>
+            <ActionEffect action={lastActions.player} />
           </div>
 
-          <article className="fighter ema-card">
-            <div className="avatar-wrap">
-              <div className="avatar ema-avatar">NANOKA</div>
-              <ActionEffect action={lastActions.ema} />
-            </div>
+          <h2>あなた</h2>
 
-            <h2>黒部ナノカ</h2>
+          <LifeMeter value={playerLife} />
+          <p className="energy-text">ライフ {playerLife} / {MAX_LIFE}</p>
 
-            <LifeMeter value={emaLife} />
-            <p className="energy-text">ライフ {emaLife} / {MAX_LIFE}</p>
+          <EnergyMeter value={playerEnergy} />
+          <p className="energy-text">エネ {playerEnergy} / 6</p>
 
-            <EnergyMeter value={emaEnergy} />
-            <p className="energy-text">エネ {emaEnergy} / 6</p>
+          <GuardStreak value={playerGStreak} />
+        </article>
 
-            <GuardStreak value={emaGStreak} />
-          </article>
+        <div className="center-panel">
+          <div className="versus">VS</div>
+        </div>
+
+        <article className="fighter ema-card">
+          <div className="avatar-wrap">
+            <div className="avatar ema-avatar">NANOKA</div>
+            <ActionEffect action={lastActions.ema} />
+          </div>
+
+          <h2>黒部ナノカ</h2>
+
+          <LifeMeter value={emaLife} />
+          <p className="energy-text">ライフ {emaLife} / {MAX_LIFE}</p>
+
+          <EnergyMeter value={emaEnergy} />
+          <p className="energy-text">エネ {emaEnergy} / 6</p>
+
+          <GuardStreak value={emaGStreak} />
+        </article>
+      </section>
+
+      <section className="controls">
+        <button
+          className="action-button charge"
+          disabled={matchOver || isAnimating || playerEnergy >= 6}
+          onClick={() => play("C")}
+        >
+          <span className="action-name">装填する</span>
+        </button>
+
+        <button
+          className="action-button guard"
+          disabled={matchOver || isAnimating || playerGuardLocked}
+          onClick={() => play("G")}
+        >
+          <span className="action-name">躱す</span>
+        </button>
+
+        <button
+          className={`action-button ${playerEnergy >= 6 ? "cannon" : "fire"}`}
+          disabled={matchOver || isAnimating || playerEnergy < 1}
+          onClick={() => play(playerEnergy >= 6 ? "B" : "F")}
+        >
+          <span className="action-name">
+            {playerEnergy >= 6 ? "連射する" : "撃つ"}
+          </span>
+        </button>
+      </section>
+
+      {matchOver && (
+        <section className={`result-panel ${playerLife > emaLife ? "clear" : "bad"}`}>
+          <h2>{playerLife > emaLife ? "勝利" : "敗北"}</h2>
+          <p>
+            あなた {playerLife} - {emaLife} ナノカ
+          </p>
+          <button onClick={resetGame}>もう一度</button>
         </section>
-
-        <section className="controls">
-          <button
-            className="action-button charge"
-            disabled={matchOver || isAnimating || playerEnergy >= 6}
-            onClick={() => play("C")}
-          >
-            <span className="action-name">装填する</span>
-          </button>
-
-          <button
-            className="action-button guard"
-            disabled={matchOver || isAnimating || playerGuardLocked}
-            onClick={() => play("G")}
-          >
-            <span className="action-name">躱す</span>
-          </button>
-
-          <button
-            className={`action-button ${playerEnergy >= 6 ? "cannon" : "fire"}`}
-            disabled={matchOver || isAnimating || playerEnergy < 1}
-            onClick={() => play(playerEnergy >= 6 ? "B" : "F")}
-          >
-            <span className="action-name">
-              {playerEnergy >= 6 ? "連射する" : "撃つ"}
-            </span>
-          </button>
-        </section>
-
-        {matchOver && (
-          <section className={`result-panel ${playerLife > emaLife ? "clear" : "bad"}`}>
-            <h2>{playerLife > emaLife ? "勝利" : "敗北"}</h2>
-            <p>あなた {playerLife} - {emaLife} ナノカ</p>
-            <button onClick={resetGame}>もう一度</button>
-          </section>
-        )}
-      </main>
-    </>
+      )}
+    </main>
   );
 }

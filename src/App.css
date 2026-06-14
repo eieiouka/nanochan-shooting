@@ -24,10 +24,9 @@ body {
 .app {
   position: relative;
   z-index: 1;
+  isolation: isolate;
 
   width: 100%;
-
-  /* 背景画像 1292×724 前提。背景の下端＝controls下端 */
   height: min(100svh, calc(100vw * 724 / 1292));
 
   margin: 0;
@@ -37,6 +36,13 @@ body {
   grid-template-rows: auto 1fr auto;
 
   overflow: hidden;
+}
+
+.app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
 
   background-image: url("/images/nanoka_stop.png");
   background-repeat: no-repeat;
@@ -45,6 +51,9 @@ body {
 }
 
 .scoreboard {
+  position: relative;
+  z-index: 2;
+
   display: grid;
   grid-template-columns: 1fr auto auto auto 1fr;
   align-items: center;
@@ -82,6 +91,9 @@ body {
 }
 
 .battle-board {
+  position: relative;
+  z-index: 2;
+
   display: grid;
   grid-template-columns: 1fr 160px 1fr;
   gap: 10px;
@@ -208,6 +220,9 @@ body {
 }
 
 .controls {
+  position: relative;
+  z-index: 2;
+
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0;
@@ -216,7 +231,7 @@ body {
   margin: 0;
 
   border-top: 4px solid #2a1818;
-  background: rgba(255, 255, 255, 0.92);
+  background: #2a1818;
 }
 
 .action-button {
@@ -242,7 +257,6 @@ body {
 
 .action-button:disabled {
   cursor: not-allowed;
-  filter: grayscale(0.9);
   opacity: 0.45;
 }
 
@@ -268,6 +282,9 @@ body {
 }
 
 .result-panel {
+  position: relative;
+  z-index: 2;
+
   margin: 20px;
   padding: 18px;
   text-align: center;
@@ -336,7 +353,7 @@ body {
   box-shadow: 4px 4px 0 rgba(42, 24, 24, 0.18);
   transform: translateX(-50%);
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
 }
 
 .action-effect-icon {
@@ -379,12 +396,13 @@ body {
   position: fixed;
   top: 0;
   left: 0;
+
   z-index: 0;
 
   width: 100%;
-  height: auto;
+  height: min(100svh, calc(100vw * 724 / 1292));
 
-  object-fit: contain;
+  object-fit: cover;
   object-position: top center;
 
   pointer-events: none;
@@ -394,6 +412,10 @@ body {
   .app {
     height: auto;
     min-height: 100svh;
+  }
+
+  .app::before {
+    background-size: cover;
   }
 
   .battle-board {
