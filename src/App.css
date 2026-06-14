@@ -613,4 +613,17 @@ body {
   .guard-count {
     display: block;
   }
+
+  .nanoka-movie-bg {
+    width: auto;
+    height: 100%;
+
+    left: 50%;
+    right: auto;
+
+    transform: translateX(-50%);
+
+    object-fit: cover;
+    object-position: top center;
+  }
 }
