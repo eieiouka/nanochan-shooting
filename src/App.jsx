@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { MAX_G_STREAK, nextGStreak, pickEmaAction } from "./ai/aiSelector";
 
-const MAX_LIFE = 10;
+const MAX_LIFE = 30;
 
 const NANOKA_MOVIES = {
   C: "/movies/nanoka_charge.mp4",
@@ -428,7 +428,7 @@ export default function App() {
             <h2>ルール説明</h2>
 
             <p>
-              ナノカちゃんとバトルしましょう！10ライフを先に削った方が勝ちです。
+              ナノカちゃんとバトルしましょう！30ライフを先に削った方が勝ちです。
               <br />
               お互いに、3つの行動を取れます。
               <br />
