@@ -280,10 +280,19 @@ export default function App() {
     setLastActions({ player: null, ema: null });
     setPlayerActionHistory([]);
     if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.removeAttribute("src");
-      videoRef.current.load();
+      const video = videoRef.current;
+
+      // Reactの再描画を待たず、即座に動画レイヤーを表示する
+      video.classList.add("active");
+
+      video.src = movie;
+      video.currentTime = 0;
+
+      video.play().catch(() => {
+        finishTurn();
+      });
     }
+    
     setPendingTurn(null);
     setIsAnimating(false);
   }
@@ -326,7 +335,7 @@ export default function App() {
           onError={finishTurn}
         />
       ))}
-      
+
       <section className="scoreboard life-scoreboard">
         <div className="score-number player">{playerLife}</div>
         <div className="score-label">あなた</div>
