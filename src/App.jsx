@@ -344,11 +344,14 @@ export default function App() {
 
         <button
           className="action-button guard"
-          disabled={matchOver || isAnimating || playerGuardLocked}
-          onClick={() => play("G")}
+          onClick={() => handleAction("G")}
         >
-          <span className="action-name">
-            躱す ({playerGStreak}連)
+          <span className="action-name guard-label">
+            <span>躱す</span>
+
+            <span className="guard-count">
+              （{playerGStreak}連続）
+            </span>
           </span>
         </button>
 

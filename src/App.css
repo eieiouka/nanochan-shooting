@@ -245,6 +245,16 @@ body {
   font-weight: 900;
 }
 
+.guard-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.guard-count {
+  display: inline;
+}
+
 .charge {
   background: #ffe073;
 }
@@ -584,5 +594,15 @@ body {
     min-width: 176px;
 
     margin-top: 8px;
+  }
+
+  .guard-label {
+    flex-direction: column;
+    gap: 0;
+    line-height: 1.1;
+  }
+
+  .guard-count {
+    display: block;
   }
 }
