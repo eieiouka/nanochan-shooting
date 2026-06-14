@@ -137,6 +137,7 @@ export default function App() {
   const videoRefs = useRef({});
   const [pendingTurn, setPendingTurn] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showRules, setShowRules] = useState(false);
 
   const matchOver = playerLife <= 0 || emaLife <= 0;
   useEffect(() => {
@@ -367,6 +368,13 @@ export default function App() {
           </div>
         </article>
       </section>
+
+      <button
+        className="rule-button"
+        onClick={() => setShowRules(true)}
+      >
+        ルール説明
+      </button>
       
       <section className="controls">
         <button
@@ -410,6 +418,30 @@ export default function App() {
               あなた {playerLife} - {emaLife} ナノカ
             </p>
             <button onClick={resetGame}>もう一度</button>
+          </section>
+        </div>
+      )}
+
+      {showRules && (
+        <div className="result-overlay">
+          <section className="result-panel">
+            <h2>ルール説明</h2>
+
+            <p>
+              ・装填：弾を1発増やす
+              <br />
+              ・躱す：銃撃を回避
+              <br />
+              ・撃つ：弾を1発消費
+              <br />
+              ・6発で連射
+              <br />
+              ・躱すは2連続まで
+            </p>
+
+            <button onClick={() => setShowRules(false)}>
+              閉じる
+            </button>
           </section>
         </div>
       )}
