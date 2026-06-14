@@ -9,7 +9,12 @@ const NANOKA_MOVIES = {
   C: "/movies/nanoka_charge.mp4",
   G: "/movies/nanoka_guard.mp4",
   F: "/movies/nanoka_fire.mp4",
+
+  // ナノカがBを撃つ
   B: "/movies/nanoka_blast.mp4",
+
+  // プレイヤーがBを撃ってナノカが被弾
+  DAMAGE_B: "/movies/nanoka_damage_blast.mp4",
 
   FIRE_FIRE: "/movies/nanoka_fire_fire.mp4",
   GUARD_NOTHING: "/movies/nanoka_guard_nothing.mp4",
@@ -166,18 +171,31 @@ export default function App() {
   }
 
   function chooseNanokaMovie(action, emaAction) {
+    // 互いにBなら、F同士と同じ相殺movie
+    if (action === "B" && emaAction === "B") {
+      return NANOKA_MOVIES.FIRE_FIRE;
+    }
+
+    // プレイヤーがBを撃った場合は、相手が何をしていてもナノカ被弾movie
+    if (action === "B") {
+      return NANOKA_MOVIES.DAMAGE_B;
+    }
+
+    // ナノカがBを撃った場合は、プレイヤーが何をしていてもナノカB movie
+    if (emaAction === "B") {
+      return NANOKA_MOVIES.B;
+    }
+
     let movie = NANOKA_MOVIES[emaAction];
 
     if (action === "F") {
       if (emaAction === "C") movie = NANOKA_MOVIES.CHARGE_FIRE;
       else if (emaAction === "G") movie = NANOKA_MOVIES.GUARD_FIRE;
       else if (emaAction === "F") movie = NANOKA_MOVIES.FIRE_FIRE;
-      else if (emaAction === "B") movie = NANOKA_MOVIES.B;
     } else if (action === "G") {
       if (emaAction === "C") movie = NANOKA_MOVIES.CHARGE_GUARD;
       else if (emaAction === "G") movie = NANOKA_MOVIES.GUARD_GUARD;
       else if (emaAction === "F") movie = NANOKA_MOVIES.FIRE_GUARD;
-      else if (emaAction === "B") movie = NANOKA_MOVIES.B;
     } else if (emaAction === "G") {
       movie = NANOKA_MOVIES.GUARD_NOTHING;
     }
@@ -292,24 +310,20 @@ export default function App() {
           <div className="versus">VS</div>
         </div>
 
-        <article className="fighter ema-card">
-          <div className="avatar-wrap">
-            <div className="avatar ema-avatar">NANOKA</div>
-            <ActionEffect action={lastActions.ema} />
+        <article className="fighter ema-card nanoka-ammo-card">
+          <ActionEffect action={lastActions.ema} />
+
+          <div className="nanoka-ammo-corner">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <span
+                key={index}
+                className={`ammo-bullet ${index < emaEnergy ? "filled" : ""}`}
+              />
+            ))}
           </div>
-
-          <h2>黒部ナノカ</h2>
-
-          <LifeMeter value={emaLife} />
-          <p className="energy-text">ライフ {emaLife} / {MAX_LIFE}</p>
-
-          <EnergyMeter value={emaEnergy} />
-          <p className="energy-text">エネ {emaEnergy} / 6</p>
-
-          <GuardStreak value={emaGStreak} />
         </article>
       </section>
-
+      
       <section className="controls">
         <button
           className="action-button charge"

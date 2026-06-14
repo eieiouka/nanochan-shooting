@@ -231,7 +231,7 @@ body {
   margin: 0;
 
   border-top: 4px solid #2a1818;
-  background: #2a1818;
+  background: rgba(42, 24, 24, 0.92);
 }
 
 .action-button {
@@ -393,19 +393,78 @@ body {
 }
 
 .nanoka-movie-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: absolute;
+  inset: 0;
 
-  z-index: 0;
+  z-index: 1;
 
   width: 100%;
-  height: min(100svh, calc(100vw * 724 / 1292));
+  height: 100%;
 
   object-fit: cover;
   object-position: top center;
 
   pointer-events: none;
+}
+
+.nanoka-ammo-card {
+  position: relative;
+
+  min-height: 0;
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.nanoka-ammo-card .action-effect {
+  top: 16px;
+}
+
+.nanoka-ammo-corner {
+  position: absolute;
+
+  top: 68px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  z-index: 4;
+}
+
+.ammo-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.ammo-bullet {
+  width: 18px;
+  height: 36px;
+
+  border: 2px solid #2a1818;
+  border-radius: 999px 999px 6px 6px;
+
+  background: #8a8a8a;
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.22);
+
+  transform: rotate(12deg);
+}
+
+.ammo-bullet::before {
+  width: 20px;
+  height: 20px;
+}
+
+.ammo-bullet.filled {
+  background: #ffbf00;
+  box-shadow:
+    inset 0 -4px 0 rgba(0, 0, 0, 0.22),
+    0 0 6px rgba(255, 191, 0, 0.8);
 }
 
 @media (max-width: 780px) {
