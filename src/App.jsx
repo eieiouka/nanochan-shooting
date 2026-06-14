@@ -350,7 +350,7 @@ export default function App() {
             <span>躱す</span>
 
             <span className="guard-count">
-              （{playerGStreak}連続）
+              （{playerGStreak}連）
             </span>
           </span>
         </button>
