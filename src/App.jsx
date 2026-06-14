@@ -150,7 +150,6 @@ export default function App() {
 
       video.src = src;
       video.preload = "auto";
-      video.muted = true;
       video.playsInline = true;
 
       video.load();
@@ -279,20 +278,12 @@ export default function App() {
     setEmaLife(MAX_LIFE);
     setLastActions({ player: null, ema: null });
     setPlayerActionHistory([]);
-    if (videoRef.current) {
-      const video = videoRef.current;
 
-      // Reactの再描画を待たず、即座に動画レイヤーを表示する
-      video.classList.add("active");
-
-      video.src = movie;
+    Object.values(videoRefs.current).forEach((video) => {
+      video.pause();
       video.currentTime = 0;
+    });
 
-      video.play().catch(() => {
-        finishTurn();
-      });
-    }
-    
     setPendingTurn(null);
     setIsAnimating(false);
   }
