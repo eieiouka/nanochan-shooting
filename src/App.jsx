@@ -265,17 +265,21 @@ export default function App() {
   if (!gameStarted) {
     return (
       <main className="app">
-        <section className="result-panel clear">
-          <h1>黒部ナノカを倒そう</h1>
+        <div className="result-overlay">
+          <section className="result-panel clear start-panel">
+            <h1>ナノカちゃんと銃撃戦</h1>
 
-          <p>
-            チャージでエネルギーを溜め、
-            <br />
-            攻撃を当てて10ライフを削り切れ。
-          </p>
+            <p>
+              チャージで弾を装填し、
+              <br />
+              ナノカちゃんのライフを先に0にしよう！
+            </p>
 
-          <button onClick={startGame}>ゲームスタート</button>
-        </section>
+            <button onClick={startGame}>
+              ゲームスタート
+            </button>
+          </section>
+        </div>
       </main>
     );
   }
@@ -314,10 +318,6 @@ export default function App() {
             ))}
           </div>
         </article>
-
-        <div className="center-panel">
-          <div className="versus">VS</div>
-        </div>
 
         <article className="fighter ema-card nanoka-ammo-card">
           <ActionEffect action={lastActions.ema} />
@@ -364,13 +364,15 @@ export default function App() {
       </section>
 
       {matchOver && (
-        <section className={`result-panel ${playerLife > emaLife ? "clear" : "bad"}`}>
-          <h2>{playerLife > emaLife ? "勝利" : "敗北"}</h2>
-          <p>
-            あなた {playerLife} - {emaLife} ナノカ
-          </p>
-          <button onClick={resetGame}>もう一度</button>
-        </section>
+        <div className="result-overlay">
+          <section className={`result-panel ${playerLife > emaLife ? "clear" : "bad"}`}>
+            <h2>{playerLife > emaLife ? "勝利" : "敗北"}</h2>
+            <p>
+              あなた {playerLife} - {emaLife} ナノカ
+            </p>
+            <button onClick={resetGame}>もう一度</button>
+          </section>
+        </div>
       )}
     </main>
   );

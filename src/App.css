@@ -73,7 +73,7 @@ body {
 }
 
 .score-number.player {
-  text-align: right;
+  text-align: center;
   color: #8ee2ff;
 }
 
@@ -95,8 +95,8 @@ body {
   z-index: 2;
 
   display: grid;
-  grid-template-columns: 1fr 160px 1fr;
-  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+  gap: 160px;
   align-items: stretch;
 
   min-height: 0;
@@ -199,26 +199,6 @@ body {
   color: #b7183f;
 }
 
-.center-panel {
-  display: grid;
-  place-items: center;
-  text-align: center;
-}
-
-.versus {
-  display: grid;
-  place-items: center;
-  width: 104px;
-  height: 104px;
-  margin: 0 auto;
-  border: 4px solid #2a1818;
-  border-radius: 50%;
-  background: #2a1818;
-  color: white;
-  font-size: 32px;
-  font-weight: 900;
-}
-
 .controls {
   position: relative;
   z-index: 2;
@@ -281,18 +261,31 @@ body {
   background: #c7a0ff;
 }
 
+.result-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(0, 0, 0, 0.45);
+}
+
 .result-panel {
   position: relative;
-  z-index: 2;
+  z-index: 21;
 
-  margin: 20px;
-  padding: 18px;
+  width: min(520px, calc(100% - 40px));
+
+  margin: 0;
+  padding: 28px 24px;
   text-align: center;
 
   border: 3px solid #2a1818;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 8px 8px 0 rgba(42, 24, 24, 0.18);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 8px 8px 0 rgba(42, 24, 24, 0.28);
 }
 
 .result-panel h1,
@@ -305,13 +298,13 @@ body {
 }
 
 .result-panel p {
-  margin: 6px 0 14px;
+  margin: 8px 0 18px;
   font-size: 24px;
   font-weight: 900;
 }
 
 .result-panel button {
-  padding: 10px 20px;
+  padding: 10px 22px;
   border: 0;
   border-radius: 12px;
   background: #2a1818;
@@ -321,11 +314,11 @@ body {
 }
 
 .result-panel.clear {
-  background: rgba(220, 255, 225, 0.9);
+  background: rgba(220, 255, 225, 0.96);
 }
 
 .result-panel.bad {
-  background: rgba(255, 220, 228, 0.9);
+  background: rgba(255, 220, 228, 0.96);
 }
 
 .action-effect {
@@ -490,6 +483,39 @@ body {
   .score-number {
     font-size: 32px;
   }
+
+  /* ナノカの弾＋行動 */
+  .nanoka-ammo-card {
+    position: fixed;
+
+    top: 70px;
+    right: 12px;
+
+    z-index: 10;
+  }
+
+  /* プレイヤーの弾＋行動 */
+  .player-card {
+    position: fixed;
+
+    left: 12px;
+    bottom: 100px;
+
+    z-index: 10;
+  }
+
+  .player-ammo,
+  .nanoka-ammo-corner {
+    position: static;
+    transform: none;
+  }
+
+  .player-card .action-effect,
+  .nanoka-ammo-card .action-effect {
+    position: static;
+    transform: none;
+    margin-top: 6px;
+  }
 }
 
 .player-card {
@@ -526,4 +552,23 @@ body {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.86);
   box-shadow: 5px 5px 0 rgba(42, 24, 24, 0.18);
+}
+
+.start-panel {
+  width: min(520px, calc(100% - 40px));
+  min-height: 200px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 40px 24px;
+}
+
+.start-panel h1 {
+  margin-bottom: 25px;
+}
+
+.start-panel p {
+  margin-bottom: 25px;
 }
