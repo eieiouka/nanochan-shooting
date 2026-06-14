@@ -627,3 +627,26 @@ body {
     object-position: top center;
   }
 }
+
+.sp-title {
+  display: none;
+}
+
+.pc-title {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .pc-title {
+    display: none;
+  }
+
+  .sp-title {
+    display: inline;
+    line-height: 1.1;
+  }
+
+  .start-panel h1 {
+    margin-bottom: 24px;
+  }
+}

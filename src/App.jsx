@@ -291,7 +291,14 @@ export default function App() {
       <main className="app">
         <div className="result-overlay">
           <section className="result-panel clear start-panel">
-            <h1>ナノカちゃんと銃撃戦</h1>
+            <h1>
+              <span className="pc-title">ナノカちゃんと銃撃戦</span>
+              <span className="sp-title">
+                ナノカちゃんと
+                <br />
+                銃撃戦
+              </span>
+            </h1>
 
             <p>
               チャージで弾を装填し、
