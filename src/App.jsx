@@ -28,10 +28,10 @@ const NANOKA_MOVIES = {
 };
 
 const ACTION_EFFECTS = {
-  C: { icon: "⚡", label: "チャージ", className: "charge" },
-  G: { icon: "🛡", label: "ガード", className: "guard" },
-  F: { icon: "🔥", label: "ファイア", className: "fire" },
-  B: { icon: "💥", label: "大砲", className: "cannon" },
+  C: { label: "装填した", className: "charge" },
+  G: { label: "躱した", className: "guard" },
+  F: { label: "撃った", className: "fire" },
+  B: { label: "撃った", className: "cannon" },
 };
 
 function clampEnergy(value) {
@@ -105,14 +105,21 @@ function GuardStreak({ value }) {
 }
 
 function ActionEffect({ action }) {
-  if (!action) return <div className="action-effect empty">未行動</div>;
+  if (!action) {
+    return (
+      <div className="action-effect empty">
+        未行動
+      </div>
+    );
+  }
 
   const effect = ACTION_EFFECTS[action];
 
   return (
-    <div className={`action-effect persistent ${effect.className}`}>
-      <span className="action-effect-icon">{effect.icon}</span>
-      <span className="action-effect-label">{effect.label}</span>
+    <div className={`action-effect ${effect.className}`}>
+      <span className="action-effect-label">
+        {effect.label}
+      </span>
     </div>
   );
 }
@@ -145,20 +152,26 @@ export default function App() {
   function finishTurn() {
     if (!pendingTurn) return;
 
-    const { action, emaAction, result } = pendingTurn;
+    const { action, result } = pendingTurn;
 
-    setLastActions({ player: action, ema: emaAction });
     setPlayerActionHistory((prev) => [...prev, action].slice(-12));
 
     if (result.result === "playerHit") {
       setEmaLife((value) => Math.max(0, value - 1));
+      setLastActions({ player: null, ema: null });
       resetRoundState();
       setTurn((value) => value + 1);
     } else if (result.result === "emaHit") {
       setPlayerLife((value) => Math.max(0, value - 1));
+      setLastActions({ player: null, ema: null });
       resetRoundState();
       setTurn((value) => value + 1);
     } else {
+      setLastActions({
+        player: pendingTurn.action,
+        ema: pendingTurn.emaAction,
+      });
+
       setPlayerEnergy(result.playerEnergy);
       setEmaEnergy(result.emaEnergy);
       setPlayerGStreak(result.playerGStreak);
@@ -334,7 +347,9 @@ export default function App() {
           disabled={matchOver || isAnimating || playerGuardLocked}
           onClick={() => play("G")}
         >
-          <span className="action-name">躱す</span>
+          <span className="action-name">
+            躱す ({playerGStreak}連)
+          </span>
         </button>
 
         <button

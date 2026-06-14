@@ -88,6 +88,14 @@ export function pickEmaAction({
   const row = guard3GtoModel[key] ?? { C: 34, G: 33, F: 33, B: 0 };
 
   const normalized = normalizeRow(row, emaEnergy, emaGStreak);
+
+  // 100%の自明ムーブは補正しない
+  const forcedAction = Object.entries(normalized).find(([, p]) => p >= 99.999);
+
+  if (forcedAction) {
+    return forcedAction[0];
+  }
+
   const adjusted = applyGShortageMeta(
     normalized,
     playerActionHistory,
