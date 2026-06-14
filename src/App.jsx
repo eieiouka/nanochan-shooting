@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { MAX_G_STREAK, nextGStreak, pickEmaAction } from "./ai/aiSelector";
 import { audioMixer } from "./audio/audioMixer";
@@ -136,10 +136,29 @@ export default function App() {
   const [playerActionHistory, setPlayerActionHistory] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [nanokaMovie, setNanokaMovie] = useState(null);
+  const preloadedVideosRef = useRef({});
   const [pendingTurn, setPendingTurn] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const matchOver = playerLife <= 0 || emaLife <= 0;
+  useEffect(() => {
+    const videos = Object.values(NANOKA_MOVIES);
+
+    videos.forEach((src) => {
+      if (preloadedVideosRef.current[src]) return;
+
+      const video = document.createElement("video");
+
+      video.src = src;
+      video.preload = "auto";
+      video.muted = true;
+      video.playsInline = true;
+
+      video.load();
+
+      preloadedVideosRef.current[src] = video;
+    });
+  }, []);
   const playerGuardLocked = playerGStreak >= MAX_G_STREAK;
 
   function resetRoundState() {
@@ -292,6 +311,7 @@ export default function App() {
           src={nanokaMovie}
           autoPlay
           playsInline
+          preload="auto"
           onEnded={finishTurn}
           onError={finishTurn}
         />
@@ -344,7 +364,8 @@ export default function App() {
 
         <button
           className="action-button guard"
-          onClick={() => handleAction("G")}
+          disabled={matchOver || isAnimating || playerGuardLocked}
+          onClick={() => play("G")}
         >
           <span className="action-name guard-label">
             <span>躱す</span>
