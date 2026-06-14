@@ -135,7 +135,6 @@ export default function App() {
   const [gameStarted, setGameStarted] = useState(false);
   const preloadedVideosRef = useRef({});
   const videoRefs = useRef({});
-  const bgmRef = useRef(null);
   const [pendingTurn, setPendingTurn] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -268,14 +267,6 @@ export default function App() {
   }
 
   function startGame() {
-    const bgm = bgmRef.current;
-
-    if (bgm) {
-      bgm.volume = 0.3;
-      bgm.loop = true;
-      bgm.play().catch(() => {});
-    }
-
     setGameStarted(true);
   }
 
@@ -298,13 +289,6 @@ export default function App() {
   if (!gameStarted) {
     return (
       <main className="app">
-        <audio
-          ref={bgmRef}
-          src="/sounds/bgm.mp3"
-          loop
-          preload="auto"
-        />
-
         <div className="result-overlay">
           <section className="result-panel clear start-panel">
             <h1>ナノカちゃんと銃撃戦</h1>
@@ -326,13 +310,6 @@ export default function App() {
 
   return (
     <main className="app">
-      <audio
-        ref={bgmRef}
-        src="/sounds/bgm.mp3"
-        loop
-        preload="auto"
-      />
-
       {Object.values(NANOKA_MOVIES).map((src) => (
         <video
           key={src}
