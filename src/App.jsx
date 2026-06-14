@@ -131,12 +131,11 @@ export default function App() {
   const [emaGStreak, setEmaGStreak] = useState(0);
   const [playerLife, setPlayerLife] = useState(MAX_LIFE);
   const [emaLife, setEmaLife] = useState(MAX_LIFE);
-  const [turn, setTurn] = useState(1);
   const [lastActions, setLastActions] = useState({ player: null, ema: null });
   const [playerActionHistory, setPlayerActionHistory] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
-  const [nanokaMovie, setNanokaMovie] = useState(null);
   const preloadedVideosRef = useRef({});
+  const videoRef = useRef(null);
   const [pendingTurn, setPendingTurn] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -179,12 +178,10 @@ export default function App() {
       setEmaLife((value) => Math.max(0, value - 1));
       setLastActions({ player: null, ema: null });
       resetRoundState();
-      setTurn((value) => value + 1);
     } else if (result.result === "emaHit") {
       setPlayerLife((value) => Math.max(0, value - 1));
       setLastActions({ player: null, ema: null });
       resetRoundState();
-      setTurn((value) => value + 1);
     } else {
       setLastActions({
         player: pendingTurn.action,
@@ -198,7 +195,6 @@ export default function App() {
     }
 
     setPendingTurn(null);
-    setNanokaMovie(null);
     setIsAnimating(false);
   }
 
@@ -259,9 +255,16 @@ export default function App() {
       emaGStreak
     );
 
+    const movie = chooseNanokaMovie(action, emaAction);
+
     setPendingTurn({ action, emaAction, result });
-    setNanokaMovie(chooseNanokaMovie(action, emaAction));
     setIsAnimating(true);
+
+    if (videoRef.current) {
+      videoRef.current.src = movie;
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
   }
 
   function startGame() {
@@ -273,11 +276,9 @@ export default function App() {
     resetRoundState();
     setPlayerLife(MAX_LIFE);
     setEmaLife(MAX_LIFE);
-    setTurn(1);
     setLastActions({ player: null, ema: null });
     setPlayerActionHistory([]);
     setPendingTurn(null);
-    setNanokaMovie(null);
     setIsAnimating(false);
   }
 
@@ -305,17 +306,14 @@ export default function App() {
 
   return (
     <main className="app">
-      {nanokaMovie && (
-        <video
-          className="nanoka-movie-bg"
-          src={nanokaMovie}
-          autoPlay
-          playsInline
-          preload="auto"
-          onEnded={finishTurn}
-          onError={finishTurn}
-        />
-      )}
+      <video
+        ref={videoRef}
+        className="nanoka-movie-bg"
+        playsInline
+        preload="auto"
+        onEnded={finishTurn}
+        onError={finishTurn}
+      />
 
       <section className="scoreboard life-scoreboard">
         <div className="score-number player">{playerLife}</div>
