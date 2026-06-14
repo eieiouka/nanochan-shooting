@@ -135,7 +135,7 @@ export default function App() {
   const [playerActionHistory, setPlayerActionHistory] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
   const preloadedVideosRef = useRef({});
-  const videoRef = useRef(null);
+  const videoRefs = useRef({});
   const [pendingTurn, setPendingTurn] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -260,10 +260,11 @@ export default function App() {
     setPendingTurn({ action, emaAction, result });
     setIsAnimating(true);
 
-    if (videoRef.current) {
-      videoRef.current.src = movie;
-      videoRef.current.currentTime = 0;
-      videoRef.current.play();
+    const video = videoRefs.current[movie];
+
+    if (video) {
+      video.currentTime = 0;
+      video.play();
     }
   }
 
@@ -311,15 +312,21 @@ export default function App() {
 
   return (
     <main className="app">
-      <video
-        ref={videoRef}
-        className={`nanoka-movie-bg ${isAnimating ? "active" : ""}`}
-        playsInline
-        preload="auto"
-        onEnded={finishTurn}
-        onError={finishTurn}
-      />
-
+      {Object.values(NANOKA_MOVIES).map((src) => (
+        <video
+          key={src}
+          ref={(element) => {
+            if (element) videoRefs.current[src] = element;
+          }}
+          className={`nanoka-movie-bg ${isAnimating && pendingTurn && chooseNanokaMovie(pendingTurn.action, pendingTurn.emaAction) === src ? "active" : ""}`}
+          src={src}
+          playsInline
+          preload="auto"
+          onEnded={finishTurn}
+          onError={finishTurn}
+        />
+      ))}
+      
       <section className="scoreboard life-scoreboard">
         <div className="score-number player">{playerLife}</div>
         <div className="score-label">あなた</div>
