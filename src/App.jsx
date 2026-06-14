@@ -22,13 +22,6 @@ const NANOKA_MOVIES = {
   GUARD_FIRE: "/movies/nanoka_guard_fire.mp4",
 };
 
-const ACTION_LABELS = {
-  C: "チャージ",
-  G: "ガード",
-  F: "ファイア",
-  B: "大砲",
-};
-
 const ACTION_EFFECTS = {
   C: { icon: "⚡", label: "チャージ", className: "charge" },
   G: { icon: "🛡", label: "ガード", className: "guard" },
@@ -172,6 +165,26 @@ export default function App() {
     setIsAnimating(false);
   }
 
+  function chooseNanokaMovie(action, emaAction) {
+    let movie = NANOKA_MOVIES[emaAction];
+
+    if (action === "F") {
+      if (emaAction === "C") movie = NANOKA_MOVIES.CHARGE_FIRE;
+      else if (emaAction === "G") movie = NANOKA_MOVIES.GUARD_FIRE;
+      else if (emaAction === "F") movie = NANOKA_MOVIES.FIRE_FIRE;
+      else if (emaAction === "B") movie = NANOKA_MOVIES.B;
+    } else if (action === "G") {
+      if (emaAction === "C") movie = NANOKA_MOVIES.CHARGE_GUARD;
+      else if (emaAction === "G") movie = NANOKA_MOVIES.GUARD_GUARD;
+      else if (emaAction === "F") movie = NANOKA_MOVIES.FIRE_GUARD;
+      else if (emaAction === "B") movie = NANOKA_MOVIES.B;
+    } else if (emaAction === "G") {
+      movie = NANOKA_MOVIES.GUARD_NOTHING;
+    }
+
+    return movie;
+  }
+
   function play(action) {
     if (matchOver) return;
     if (isAnimating) return;
@@ -197,61 +210,8 @@ export default function App() {
     );
 
     setPendingTurn({ action, emaAction, result });
-      let movie = NANOKA_MOVIES[emaAction];
-
-      // プレイヤーがFを選んだとき専用
-      if (action === "F") {
-        // あなたF / ナノカC
-        if (emaAction === "C") {
-          movie = NANOKA_MOVIES.CHARGE_FIRE;
-        }
-
-        // あなたF / ナノカG
-        else if (emaAction === "G") {
-          movie = NANOKA_MOVIES.GUARD_FIRE;
-        }
-
-        // あなたF / ナノカF
-        else if (emaAction === "F") {
-          movie = NANOKA_MOVIES.FIRE_FIRE;
-        }
-
-        // あなたF / ナノカB
-        else if (emaAction === "B") {
-          movie = NANOKA_MOVIES.B;
-        }
-      }
-
-      // プレイヤーがGを選んだとき専用
-      else if (action === "G") {
-        // あなたG / ナノカC
-        if (emaAction === "C") {
-          movie = NANOKA_MOVIES.CHARGE_GUARD;
-        }
-
-        // あなたG / ナノカG
-        else if (emaAction === "G") {
-          movie = NANOKA_MOVIES.GUARD_GUARD;
-        }
-
-        // あなたG / ナノカF
-        else if (emaAction === "F") {
-          movie = NANOKA_MOVIES.FIRE_GUARD;
-        }
-
-        // あなたG / ナノカB
-        else if (emaAction === "B") {
-          movie = NANOKA_MOVIES.B;
-        }
-      }
-
-      // ナノカのガード空振り
-      else if (emaAction === "G") {
-        movie = NANOKA_MOVIES.GUARD_NOTHING;
-      }
-
-      setNanokaMovie(movie);
-      setIsAnimating(true);
+    setNanokaMovie(chooseNanokaMovie(action, emaAction));
+    setIsAnimating(true);
   }
 
   function startGame() {
@@ -317,11 +277,15 @@ export default function App() {
               <div className="avatar player-avatar">YOU</div>
               <ActionEffect action={lastActions.player} />
             </div>
+
             <h2>あなた</h2>
+
             <LifeMeter value={playerLife} />
             <p className="energy-text">ライフ {playerLife} / {MAX_LIFE}</p>
+
             <EnergyMeter value={playerEnergy} />
             <p className="energy-text">エネ {playerEnergy} / 6</p>
+
             <GuardStreak value={playerGStreak} />
           </article>
 
@@ -334,34 +298,44 @@ export default function App() {
               <div className="avatar ema-avatar">NANOKA</div>
               <ActionEffect action={lastActions.ema} />
             </div>
+
             <h2>黒部ナノカ</h2>
+
             <LifeMeter value={emaLife} />
             <p className="energy-text">ライフ {emaLife} / {MAX_LIFE}</p>
+
             <EnergyMeter value={emaEnergy} />
             <p className="energy-text">エネ {emaEnergy} / 6</p>
+
             <GuardStreak value={emaGStreak} />
           </article>
         </section>
 
         <section className="controls">
-          <button className="action-button charge" disabled={matchOver || isAnimating} onClick={() => play("C")}>
-            <span className="action-name">チャージ</span>
-            <span className="action-sub">エネ+1</span>
+          <button
+            className="action-button charge"
+            disabled={matchOver || isAnimating || playerEnergy >= 6}
+            onClick={() => play("C")}
+          >
+            <span className="action-name">装填する</span>
           </button>
 
-          <button className="action-button guard" disabled={matchOver || isAnimating || playerGuardLocked} onClick={() => play("G")}>
-            <span className="action-name">ガード</span>
-            <span className="action-sub">{playerGuardLocked ? "使用不可" : "防御"}</span>
+          <button
+            className="action-button guard"
+            disabled={matchOver || isAnimating || playerGuardLocked}
+            onClick={() => play("G")}
+          >
+            <span className="action-name">躱す</span>
           </button>
 
-          <button className="action-button fire" disabled={matchOver || isAnimating || playerEnergy < 1} onClick={() => play("F")}>
-            <span className="action-name">ファイア</span>
-            <span className="action-sub">1エネ消費</span>
-          </button>
-
-          <button className="action-button cannon" disabled={matchOver || isAnimating || playerEnergy < 6} onClick={() => play("B")}>
-            <span className="action-name">大砲</span>
-            <span className="action-sub">6エネ</span>
+          <button
+            className={`action-button ${playerEnergy >= 6 ? "cannon" : "fire"}`}
+            disabled={matchOver || isAnimating || playerEnergy < 1}
+            onClick={() => play(playerEnergy >= 6 ? "B" : "F")}
+          >
+            <span className="action-name">
+              {playerEnergy >= 6 ? "連射する" : "撃つ"}
+            </span>
           </button>
         </section>
 
