@@ -165,9 +165,17 @@ function applySpotExploit(row, playerActionHistory, spotKey, energyKey, emaEnerg
   }
 
   // Cが多すぎる/少なすぎる → Cを狩れるFを増やす
-  if (leakAction === "C" && emaEnergy >= 1) {
-    moveProb(adjusted, "G", "F", shift * 0.6);
-    moveProb(adjusted, "C", "F", shift * 0.4);
+  if (leakAction === "C") {
+    if (emaEnergy >= 1) {
+      moveProb(adjusted, "G", "F", shift * 0.6);
+      moveProb(adjusted, "C", "F", shift * 0.4);
+    } else {
+      if (leakValue > 0 && emaGStreak < MAX_G_STREAK) {
+        moveProb(adjusted, "C", "G", shift);
+      } else {
+        moveProb(adjusted, "G", "C", shift);
+      }
+    }
   }
 
   // Fが多すぎる/少なすぎる → Fを受けるGを増やす
